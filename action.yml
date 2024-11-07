@@ -27,7 +27,7 @@ runs:
 
     - name: Creating ucacher wrapper
       run: |
-        envsubst '#!/bin/bash \
+        echo '#!/bin/bash \
         GITHUB_REPOSITORY=${{ github.repository }} \
         GITHUB_TOKEN=$GITHUB_TOKEN \
         UCACHER_DB_FROM_FILESTORAGE=true \
@@ -37,7 +37,7 @@ runs:
         UCACHER_SHOW_IO=true \
         FORCE_COLOR=1 \
         LOG_LEVEL=debug \
-        /tmp/ucacher/bin/ucacher "$@"' > /usr/local/bin/ucacher;
+        /tmp/ucacher/bin/ucacher "$@"' | envsubst > /usr/local/bin/ucacher;
         chmod +x /usr/local/bin/ucacher;
         echo "ucacher installed at /usr/local/bin/ucacher";
       shell: bash
