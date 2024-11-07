@@ -26,12 +26,10 @@ runs:
           core.exportVariable('ACTIONS_RUNTIME_URL', process.env['ACTIONS_RUNTIME_URL'])
 
     - name: Creating ucacher wrapper
-      env:
-        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
-        echo $GITHUB_REPOSITORY; \
-        echo $GITHUB_TOKEN; \
-        echo '#!/bin/bash
+        echo '#!/bin/bash \
+        GITHUB_REPOSITORY: ${{ github.repository }} \
+        GITHUB_TOKEN: ${{ process.env.GITHUB_TOKEN }}
         UCACHER_DB_FROM_FILESTORAGE=true \
         UCACHER_FS_URI=gha:// \
         UCACHER_TAR_OUTPUTS=true \
