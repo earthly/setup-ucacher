@@ -27,7 +27,7 @@ runs:
 
     - name: Creating ucacher wrapper
       run: |
-        echo '#!/bin/bash \
+        echo '#!/bin/bash
         GITHUB_REPOSITORY=${{ github.repository }} \
         GITHUB_TOKEN=$GITHUB_TOKEN \
         UCACHER_DB_FROM_FILESTORAGE=true \
