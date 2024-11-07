@@ -25,11 +25,19 @@ runs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
           core.exportVariable('ACTIONS_RUNTIME_URL', process.env['ACTIONS_RUNTIME_URL'])
 
-    - name: Set ucacher environment
+    - name: Creating ucacher wrapper
       run: |
-          eval '
-            ucacher() {
-              UCACHER_DB_FROM_FILESTORAGE=true UCACHER_FS_URI=gha:// UCACHER_TAR_OUTPUTS=true UCACHER_INSTRUMENTER=seccomp_cgo UCACHER_SHOW_IO=true FORCE_COLOR=1 LOG_LEVEL=debug /tmp/ucacher/bin/ucacher "$@"
-            }
-          '
+        echo '#!/bin/bash
+        UCACHER_DB_FROM_FILESTORAGE=true \
+        UCACHER_FS_URI=gha:// \
+        UCACHER_TAR_OUTPUTS=true \
+        UCACHER_INSTRUMENTER=seccomp_cgo  \
+        UCACHER_SHOW_IO=true \
+        FORCE_COLOR=1 \
+        LOG_LEVEL=debug \
+        /tmp/ucacher/bin/ucacher "$@"' > /usr/local/bin/ucacher;
+        chmod +x /usr/local/bin/ucacher;
+        echo "ucacher installed at /usr/local/bin/ucacher";
       shell: bash
+
+
