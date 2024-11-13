@@ -1,0 +1,50 @@
+name: Setup ucacher
+description: Installs the ucacher binary
+branding:
+  icon: "sunrise"
+  color: "green"
+author: Earthly technologies
+inputs:
+  github-token:
+    description: >
+      The GitHub token used to make authenticated API requests.
+    default: ${{ github.token }}
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Downloading ucacher binary
+      run: |
+        echo "Downloading binary from ${{ inputs.binary-url }}"
+        mkdir -p /tmp/ucacher/bin
+        curl -L https://github.com/earthly/setup-ucacher/raw/refs/heads/main/bin/ucacher -o /tmp/ucacher/bin/ucacher
+        chmod +x /tmp/ucacher/bin/ucacher;
+        echo "ucacher downloaded to /tmp/ucacher/bin/ucacher";
+      shell: bash
+
+    - name: Adding required env vars for cache
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env['ACTIONS_CACHE_URL'])
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
+          core.exportVariable('ACTIONS_RUNTIME_URL', process.env['ACTIONS_RUNTIME_URL'])
+
+    - name: Creating ucacher wrapper
+      run: |
+        echo '#!/bin/bash
+        GITHUB_REPOSITORY=${{ github.repository }} \
+        GITHUB_TOKEN='\''${{ inputs.github-token }}'\'' \
+        UCACHER_DB_FROM_FILESTORAGE=true \
+        UCACHER_FS_URI=gha:// \
+        UCACHER_TAR_OUTPUTS=true \
+        UCACHER_INSTRUMENTER=seccomp_cgo \
+        UCACHER_SHOW_IO=true \
+        FORCE_COLOR=1 \
+        LOG_LEVEL=debug \
+        /tmp/ucacher/bin/ucacher "$@"' > /usr/local/bin/ucacher;
+        chmod +x /usr/local/bin/ucacher;
+        echo "ucacher installed at /usr/local/bin/ucacher";
+      shell: bash
+
+
