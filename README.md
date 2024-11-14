@@ -19,17 +19,31 @@ To cache a command, simply wrap it with `ucacher`:
 ```yaml
 steps:
   ...
-  - run: ucacher yarn test
+  - run: ucacher <your_command>
 ```
 - First Run: The command runs as usual, with a slight overhead to upload output files.
-- Subsequent Runs: `ucacher` detects if the command’s output would remain unchanged (e.g., only **README.md** was modified but isn’t accessed by `yarn test`). If so, it skips execution and restores the cached output files instantly.
+- Subsequent Runs: `ucacher` detects if the command’s output is unaffected by files changed. If so, it skips execution and restores the cached output files instantly.
 
 ## How `ucacher` works
-`ucacher` utilizes `ptrace` to monitor files read (inputs) and written (outputs) by a command. When the command completes successfully, it uploads output files to persistent storage (e.g., GitHub Actions cache) along with metadata about the build.
+`ucacher` utilizes `ptrace` to monitor files read (inputs) and written (outputs) by a command. When the command completes successfully, it uploads output files to persistent storage (e.g., GitHub Actions cache) along with some build metadata, in particular the hashes of all input files at the time they were read. 
 
-On subsequent runs, `ucacher` checks for matching initial conditions (input files, arguments, environment variables, system architecture, etc.). If they match, it skips execution and restores the cached output files instead.
+On subsequent runs, `ucacher` checks for matching initial conditions (input files content, arguments, environment variables, system architecture, etc.). If they match, it skips execution and restores the cached output files instead.
 
-> Returning to the previous example where `README.md` was modified, `ucacher` recognizes that this file doesn't affect the command output because a previous successful execution with the same initial state (environment, input files, etc.) has already been cached. Since the command is deterministic, `ucacher` can confidently skip re-execution, since if `README.md` wasn't accessed during the previous run, it won’t be accessed this time either.
+## Example
+Suppose the following steps on a `node-js` project, that run the unit tests of the client and server application components:
+```yaml
+steps:
+  ...
+- uses: earthly/setup-ucacher@main
+  ...
+  - run: ucacher yarn test --client
+  - run: ucacher yarn test --server
+```
+and the workflow already run for that branch. Now, if a change in `server-impl.js` is pushed, then:
+- `ucacher yarn test --client` would return the output from a compatible past execution right away, since that file is not used in the client tests. 
+- `ucacher yarn test --server` would execute or return a cached result, depending on whether a compatible past execution is found (command already run for that file contents). 
+
+The reason why `ucacher` determines that this file isn’t used is indirect, not by explicitly checking it, but by finding a previous execution whose input file contents that match the current filesystem state. This indicates that this file (or potentially other files) is irrelevant to this specific command instance.
 
 ## Customizing caching with ignored files and environment variables
 To improve caching performance, certain files and environment variables can be ignored so that changes to them won’t prevent cache hits.
