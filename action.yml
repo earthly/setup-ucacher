@@ -10,6 +10,11 @@ inputs:
       The GitHub token used to make authenticated API requests.
     default: ${{ github.token }}
     required: false
+  log-level:
+    description: >
+      Ucacher log level.
+    default: error
+    required: false
 runs:
   using: "composite"
   steps:
@@ -41,7 +46,7 @@ runs:
         UCACHER_INSTRUMENTER=seccomp_cgo \
         UCACHER_SHOW_IO=true \
         FORCE_COLOR=1 \
-        LOG_LEVEL=debug \
+        LOG_LEVEL=${{ inputs.log-level }} \
         /tmp/ucacher/bin/ucacher "$@"' > /usr/local/bin/ucacher;
         chmod +x /usr/local/bin/ucacher;
         echo "ucacher installed at /usr/local/bin/ucacher";
