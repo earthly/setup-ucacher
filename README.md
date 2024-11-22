@@ -86,6 +86,12 @@ This prevents environment changes that don’t impact command output from invali
 - `actions/cache`: Primarily for dependency caching, requiring explicit file lists. Often used to avoid downloading dependencies multiple times, saving network and compute resources.
 - `ucacher`: Like `actions/cache`, it can cache dependencies (for example: `ucacher npm install`), but it can also be used to cache the execution of any other command and restore its outputs, so successive commands depending on these files are not affected.
 
+## Inputs
+### `github-token`
+This token is used by `ucacher` to overwrite the Github Actions cache entry where the build metadata is stored. It requires **write** permissions for the `actions` scope in the GitHub REST API.
+
+If omitted, the `GITHUB_TOKEN` of the job is used. This token should have enough permission by default. If that is not case, please refer to the [official GHA documentation](https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token) for guidance on modifying its permissions.  
+
 ## Best practices
 1. **Split commands**: Divide large commands (e.g., `yarn test`) into smaller shards to maximize cache hit chances when only a subset of source files change.
 2. **Disable daemon modes**: If tools support daemon modes, consider disabling them for `ucacher` to track inputs and outputs accurately.
@@ -94,7 +100,7 @@ This prevents environment changes that don’t impact command output from invali
 ## Limitations
  - **OS support**: Only Linux runners supported.
  - **Architecture support**: Currently only supports `amd64`.
- - **Inter-Process communication**: External processes not part of the spawned command tree (like daemon or client-server setups) won’t have their file interactions tracked.
+ - **Inter-Process communication**: External processes not under the tree spawned by the command (like daemon or client-server setups) won’t have their file interactions tracked.
 
 ## Licensing and privacy
  - **License**: `ucacher` is free to use; it may become open-source in the future.
