@@ -13,7 +13,7 @@ inputs:
   log-level:
     description: >
       Ucacher log level.
-    default: error
+    default: debug
     required: false
 runs:
   using: "composite"
