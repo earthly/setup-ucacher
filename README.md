@@ -5,6 +5,32 @@ This action installs Earthly `ucacher`.
 ## Universal caching with `ucacher`
 `ucacher` is a CLI tool that tracks which files are accessed by commands, skips unnecessary executions, and restores cached outputs when possible, resulting in significantly **reduced execution times**.
 
+It brings: 
+* **Faster feedback loops**
+   * Skips redundant tasks by detecting if specific files or commands are unaffected by changes.
+   * Reduces build times by caching outputs and avoiding unnecessary re-execution.
+* **Simplified caching and skipping**
+   * Automates caching and skipping with minimal setup.
+   * Eliminates the need for developers to manage cache keys, paths, or complex conditions.
+   * Removes the risk of human errors in configuration, reducing pipeline failures.
+* **Enhanced precision** (traditional caching mechanisms often rely on broad keys, which can invalidate the entire cache for small, unrelated changes)
+   * Tracks file dependencies at the command level using syscall instrumentation, enabling finer-grain caching.
+   * Only re-executes commands or jobs affected by actual changes.
+   * Prevents unnecessary invalidation and reruns, saving developer time and resources.
+* **Resource efficiency**
+   * Reduces resource consumption by skipping unaffected commands.
+   * Minimizes cloud infrastructure costs, making CI/CD pipelines more sustainable.
+   * Helps developers focus on coding rather than waiting for long-running jobs.
+* **Better developer experience**
+   * Offers out-of-the-box integration with tools like GitHub Actions, requiring minimal setup.
+   * Automatically manages input/output tracking, making caching and skipping invisible to the developer.
+   * Improves workflow reliability by ensuring that only the necessary jobs execute.
+* **Scalability for complex workflows**
+   * Handles complex scenarios like monorepos or task sharding with precision.
+   * Automatically adjusts caching and skipping based on changes in specific files or commands.
+   * Reduces unnecessary duplication in matrix jobs, saving time and resources across large teams.
+
+
 ## Quick start
 ### Install and configure `ucacher`
 Add ucacher to your GitHub Actions workflow:
@@ -76,15 +102,19 @@ This prevents environment changes that don’t impact command output from invali
 
 [actions/cache](https://github.com/actions/cache) is the official GitHub Action designed to cache dependencies and build outputs in GitHub Actions workflows. Here it is how they compare to each other:
 
-| Feature        | `actions/cache`        | `ucacher`                        |
-|----------------|----------------------|------------------------------------|
-| API	          | File-based           | Command-based                      |
-| Skipping       | Manual via cache-hit | Automatic                          |
-| Output restore | Not supported        | Automatic                          |
-| Persistence    | GitHub cache         | GitHub cache, S3, Minio (upcoming) |
+| Feature        | `actions/cache`               | `ucacher`                          |
+|----------------|-------------------------------|------------------------------------|
+| Output restore | File-based                    | Command-based                      |
+| Skipping       | Manual via `if` + `cache-hit` | Automatic                          |
+| Keying         | Manual, broad scope           | Automatic, only relevant files     |
+| Persistence    | GitHub cache                  | GitHub cache, S3, Minio (upcoming) |
+| Scope          | Step                          | Command                            |
 
-- `actions/cache`: Primarily for dependency caching, requiring explicit file lists. Often used to avoid downloading dependencies multiple times, saving network and compute resources.
-- `ucacher`: Like `actions/cache`, it can cache dependencies (for example: `ucacher npm install`), but it can also be used to cache the execution of any other command and restore its outputs, so successive commands depending on these files are not affected.
+`ucacher` offers a more automated, precise, and efficient alternative to `actions/cache` in GitHub Actions by tracking file-level dependencies and automating caching and skipping at the command level. 
+
+Unlike `actions/cache`, which requires manual setup with defined paths and keys, `ucacher` eliminates human errors and dynamically determines when commands should be skipped or re-executed based on actual file changes. 
+
+This results in finer-grain caching, better resource optimization, and significant time savings, especially in complex workflows like monorepos or matrix builds, where broad cache keys in `actions/cache` often lead to inefficiencies like unnecessarily invalidating unrelated steps, redundant execution of unchanged tasks and manual configuration errors.
 
 ## Inputs
 ### `github-token`
