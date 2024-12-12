@@ -1,6 +1,9 @@
+
 # setup-ucacher
 
 This action installs Earthly `ucacher`.
+
+> Read our new blog post about ucacher [here](https://earthly.dev/blog/ucacher/)
 
 ## Universal caching with `ucacher`
 `ucacher` is a CLI tool that tracks which files are accessed by commands, skips unnecessary executions, and restores cached outputs when possible, resulting in significantly **reduced execution times**.
